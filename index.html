@@ -19,166 +19,109 @@
       --border: #1f2937;
       --danger: #ef4444;
     }
-
     * { box-sizing: border-box; }
-    html, body { height: 100%; }
-    body {
-      margin: 0;
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-      background: linear-gradient(120deg, #0b1224 0%, #0f172a 100%);
-      color: var(--text);
-    }
-
+    html, body { height: 100%; margin: 0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; background: linear-gradient(120deg, #0b1224 0%, #0f172a 100%); color: var(--text); }
     .auth-shell { display: grid; place-items: center; height: 100vh; padding: 24px; }
     .card { width: 100%; max-width: 420px; background: rgba(17, 24, 39, .75); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
     .card h1 { margin: 0 0 8px; font-size: 24px; }
     .card p { margin: 0 0 18px; color: var(--muted); font-size: 14px; }
-
     .field { display: grid; gap: 8px; margin-bottom: 14px; }
     .field label { font-size: 12px; color: var(--muted); }
     .input { width: 100%; background: #0b1020; color: var(--text); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; outline: none; }
     .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; cursor: pointer; border-radius: 12px; padding: 12px 14px; font-weight: 600; }
     .btn-primary { background: var(--brand); color: #00130a; }
-    .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
-    .row { display: flex; gap: 10px; }
     .error { color: var(--danger); font-size: 13px; margin-top: 8px; }
-
     .app { display: grid; grid-template-columns: 320px 1fr; height: 100vh; }
     .topbar { background: var(--panel); display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border); }
     .topbar h2 { margin: 0; font-size: 18px; }
     .logout-btn { background: var(--danger); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+    .popup { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--brand); color: #00130a; padding: 12px 20px; border-radius: 8px; display: none; font-weight: 600; z-index: 1000; }
   </style>
 </head>
 <body>
-  <section id="auth" class="auth-shell" hidden>
+  <div class="popup" id="popup"></div>
+  <section id="auth" class="auth-shell">
     <div class="card" id="auth-card">
       <h1 id="auth-title">Welcome</h1>
       <p id="auth-sub">Choose sign up or log in to continue.</p>
-
       <div id="signupForm">
-        <div class="field">
-          <label for="name">Name</label>
-          <input id="name" class="input" placeholder="Ada Lovelace" autocomplete="name" />
-        </div>
-        <div class="field">
-          <label for="email">Email</label>
-          <input id="email" class="input" type="email" placeholder="you@example.com" autocomplete="email" />
-        </div>
-        <div class="field">
-          <label for="password">Password</label>
-          <input id="password" class="input" type="password" placeholder="••••••••" autocomplete="new-password" />
-        </div>
+        <div class="field"><label for="name">Name</label><input id="name" class="input" placeholder="Ada Lovelace" autocomplete="name" /></div>
+        <div class="field"><label for="email">Email</label><input id="email" class="input" type="email" placeholder="you@example.com" autocomplete="email" /></div>
+        <div class="field"><label for="password">Password</label><input id="password" class="input" type="password" placeholder="••••••••" autocomplete="new-password" /></div>
         <button id="signupBtn" class="btn btn-primary" style="width:100%">Sign up</button>
         <p style="margin-top:10px;text-align:center">Already have an account? <a href="#" id="gotoLogin">Log in</a></p>
       </div>
-
       <div id="loginForm" hidden>
-        <div class="field">
-          <label for="loginEmail">Email</label>
-          <input id="loginEmail" class="input" type="email" placeholder="you@example.com" autocomplete="email" />
-        </div>
-        <div class="field">
-          <label for="loginPassword">Password</label>
-          <input id="loginPassword" class="input" type="password" placeholder="••••••••" autocomplete="current-password" />
-        </div>
-        <div class="field" style="display:flex;align-items:center;justify-content:space-between;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <input type="checkbox" id="rememberMe" />
-            <label for="rememberMe">Remember me</label>
-          </div>
-          <a href="#" id="forgotPassword" style="font-size:12px;color:var(--brand);">Forgot password?</a>
-        </div>
+        <div class="field"><label for="loginEmail">Email</label><input id="loginEmail" class="input" type="email" placeholder="you@example.com" autocomplete="email" /></div>
+        <div class="field"><label for="loginPassword">Password</label><input id="loginPassword" class="input" type="password" placeholder="••••••••" autocomplete="current-password" /></div>
+        <div class="field" style="display:flex;align-items:center;justify-content:space-between;"><div style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="rememberMe" /><label for="rememberMe">Remember me</label></div><a href="#" id="forgotPassword" style="font-size:12px;color:var(--brand);">Forgot password?</a></div>
         <button id="loginBtn" class="btn btn-primary" style="width:100%">Log in</button>
         <p style="margin-top:10px;text-align:center">No account? <a href="#" id="gotoSignup">Sign up</a></p>
       </div>
-
       <div id="auth-error" class="error"></div>
     </div>
   </section>
-
   <section id="app" class="app" hidden>
-    <div class="topbar">
-      <h2>Chatter</h2>
-      <button id="logoutBtn" class="logout-btn">Log out</button>
-    </div>
-    <!-- rest of chat app layout goes here -->
+    <div class="topbar"><h2>Chatter</h2><button id="logoutBtn" class="logout-btn">Log out</button></div>
   </section>
-
   <script type="module">
-    const firebaseConfig = {
-  apiKey: "AIzaSyCf5F4ntJtFb6ZfVnyQwqrcZiHkPHnDz-I",
-  authDomain: "fast-chat-b487e.firebaseapp.com",
-  databaseURL: "https://fast-chat-b487e-default-rtdb.firebaseio.com",
-  projectId: "fast-chat-b487e",
-  storageBucket: "fast-chat-b487e.firebasestorage.app",
-  messagingSenderId: "782961045615",
-  appId: "1:782961045615:web:41d0b3834f0fe743fa9d9a",
-};
+    const firebaseConfig = { apiKey: "AIzaSyCf5F4ntJtFb6ZfVnyQwqrcZiHkPHnDz-I", authDomain: "fast-chat-b487e.firebaseapp.com", databaseURL: "https://fast-chat-b487e-default-rtdb.firebaseio.com", projectId: "fast-chat-b487e", storageBucket: "fast-chat-b487e.appspot.com", messagingSenderId: "782961045615", appId: "1:782961045615:web:41d0b3834f0fe743fa9d9a" };
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, setPersistence, browserLocalPersistence, browserSessionPersistence, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
     import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
-
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
-
     const signupForm = document.getElementById("signupForm");
     const loginForm = document.getElementById("loginForm");
     const gotoLogin = document.getElementById("gotoLogin");
     const gotoSignup = document.getElementById("gotoSignup");
     const forgotPassword = document.getElementById("forgotPassword");
     const authErr = document.getElementById("auth-error");
+    const popup = document.getElementById("popup");
     const logoutBtn = document.getElementById("logoutBtn");
-
-    gotoLogin.onclick = () => { signupForm.hidden = true; loginForm.hidden = false; };
-    gotoSignup.onclick = () => { loginForm.hidden = true; signupForm.hidden = false; };
-
+    function showPopup(msg){ popup.textContent = msg; popup.style.display="block"; setTimeout(()=>popup.style.display="none",1500); }
+    gotoLogin.onclick = () => { signupForm.hidden=true; loginForm.hidden=false; authErr.textContent=''; };
+    gotoSignup.onclick = () => { loginForm.hidden=true; signupForm.hidden=false; authErr.textContent=''; };
     document.getElementById("signupBtn").onclick = async () => {
-      const name = document.getElementById("name").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const pass = document.getElementById("password").value;
-      if(!name || !email || !pass){ authErr.textContent = "Fill all fields."; return; }
-      try {
-        const cred = await createUserWithEmailAndPassword(auth, email, pass);
-        await updateProfile(cred.user, { displayName: name });
-        await set(ref(db, `users/${cred.user.uid}`), { name, email, createdAt: Date.now() });
-      } catch(e){ authErr.textContent = e.message; }
+      authErr.textContent='';
+      const name=document.getElementById("name").value.trim();
+      const email=document.getElementById("email").value.trim();
+      const pass=document.getElementById("password").value;
+      if(!name||!email||!pass){ authErr.textContent="Fill all fields."; return; }
+      try{
+        const cred=await createUserWithEmailAndPassword(auth,email,pass);
+        await updateProfile(cred.user,{displayName:name});
+        await set(ref(db,`users/${cred.user.uid}`),{name,email,createdAt:Date.now()});
+        showPopup("Account created successfully!");
+        setTimeout(()=>{ signupForm.hidden=true; loginForm.hidden=true; document.getElementById("auth").hidden=true; document.getElementById("app").hidden=false; },1500);
+      }catch(e){ authErr.textContent=e.message; }
     };
-
     document.getElementById("loginBtn").onclick = async () => {
-      const email = document.getElementById("loginEmail").value.trim();
-      const pass = document.getElementById("loginPassword").value;
-      const remember = document.getElementById("rememberMe").checked;
-      if(!email || !pass){ authErr.textContent = "Enter email and password."; return; }
-      try {
-        await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence);
-        await signInWithEmailAndPassword(auth, email, pass);
-      }
-      catch(e){ authErr.textContent = e.message; }
+      authErr.textContent='';
+      const email=document.getElementById("loginEmail").value.trim();
+      const pass=document.getElementById("loginPassword").value;
+      const remember=document.getElementById("rememberMe").checked;
+      if(!email||!pass){ authErr.textContent="Enter email and password."; return; }
+      try{
+        await setPersistence(auth,remember?browserLocalPersistence:browserSessionPersistence);
+        await signInWithEmailAndPassword(auth,email,pass);
+        showPopup("Login successful!");
+        setTimeout(()=>{ signupForm.hidden=true; loginForm.hidden=true; document.getElementById("auth").hidden=true; document.getElementById("app").hidden=false; },1500);
+      }catch(e){ authErr.textContent=e.message; }
     };
-
-    forgotPassword.onclick = async () => {
-      const email = document.getElementById("loginEmail").value.trim();
-      if(!email){ authErr.textContent = "Enter your email to reset password."; return; }
-      try {
-        await sendPasswordResetEmail(auth, email);
-        authErr.style.color = "#22c55e";
-        authErr.textContent = "Password reset link sent to your email.";
-      } catch(e){ authErr.style.color = "var(--danger)"; authErr.textContent = e.message; }
+    forgotPassword.onclick=async()=>{
+      authErr.textContent='';
+      const email=document.getElementById("loginEmail").value.trim();
+      if(!email){ authErr.textContent="Enter your email to reset password."; return; }
+      try{
+        await sendPasswordResetEmail(auth,email);
+        authErr.style.color="#22c55e";
+        authErr.textContent="Password reset link sent to your email.";
+      }catch(e){ authErr.style.color="var(--danger)"; authErr.textContent=e.message; }
     };
-
-    logoutBtn.onclick = async () => {
-      await signOut(auth);
-      document.getElementById("auth").hidden = false;
-      document.getElementById("app").hidden = true;
-      signupForm.hidden = true;
-      loginForm.hidden = false; // show login form by default on logout
-    };
-
-    onAuthStateChanged(auth, (user)=>{
-      if(user){ document.getElementById("auth").hidden = true; document.getElementById("app").hidden = false; }
-      else { document.getElementById("auth").hidden = false; document.getElementById("app").hidden = true; }
-    });
+    logoutBtn.onclick=async()=>{ await signOut(auth); document.getElementById("auth").hidden=false; document.getElementById("app").hidden=true; signupForm.hidden=true; loginForm.hidden=false; authErr.textContent=''; };
+    onAuthStateChanged(auth,user=>{ if(user){ document.getElementById("auth").hidden=true; document.getElementById("app").hidden=false; signupForm.hidden=true; loginForm.hidden=true; } else { document.getElementById("auth").hidden=false; document.getElementById("app").hidden=true; signupForm.hidden=true; loginForm.hidden=false; } });
   </script>
 </body>
 </html>
