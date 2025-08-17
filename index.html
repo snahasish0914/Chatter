@@ -30,11 +30,10 @@
     .btn-primary { background: var(--brand); color: #00130a; }
     .error { color: var(--danger); font-size: 13px; margin-top: 8px; }
     .popup { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--brand); color: #00130a; padding: 12px 20px; border-radius: 8px; display: none; font-weight: 600; z-index: 1000; }
-    .home-container { display: flex; flex-direction: column; align-items: center; gap: 20px; }
-    .friends-list { width: 100%; max-width: 420px; background: var(--panel); border-radius: 12px; padding: 16px; max-height: 400px; overflow-y: auto; }
-    .friend-item { padding: 8px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-    .chat-box { width: 100%; max-width: 420px; height: 300px; background: var(--panel); border-radius: 12px; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
-    .message { padding: 6px 10px; border-radius: 12px; background: var(--accent); max-width: 80%; word-wrap: break-word; }
+    .floating-btn { position: fixed; bottom: 20px; right: 20px; background: var(--brand); color: #00130a; border: none; border-radius: 50%; width: 60px; height: 60px; font-size: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .friend-modal { position: fixed; bottom: 90px; right: 20px; width: 300px; background: var(--panel); padding: 16px; border-radius: 12px; display: none; flex-direction: column; gap: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .friends-list, .chat-box { max-height: 300px; overflow-y: auto; }
+    .message { padding: 6px 10px; border-radius: 12px; background: #444; max-width: 80%; word-wrap: break-word; margin-bottom: 4px; }
     .message.self { align-self: flex-end; background: var(--brand); color: #00130a; }
   </style>
 </head>
@@ -63,22 +62,11 @@
     </div>
   </section>
 
-  <section id="home" class="home-shell" hidden>
-    <div class="home-container">
-      <h2>Welcome, <span id="userName"></span></h2>
-      <div class="field"><input id="friendEmail" class="input" placeholder="Friend's Email" /><button id="addFriendBtn" class="btn btn-primary">Add Friend</button></div>
-      <div class="friends-list" id="friendsList"></div>
-      <div class="chat-box" id="chatBox"></div>
-      <div class="field" style="display:flex; gap:8px; width:100%; max-width:420px;"><input id="messageInput" class="input" placeholder="Type a message" /><button id="sendMsgBtn" class="btn btn-primary">Send</button></div>
-      <button id="logoutBtnHome" class="logout-btn">Log out</button>
-    </div>
-  </section>
-
   <script type="module">
     const firebaseConfig = { apiKey: "AIzaSyCf5F4ntJtFb6ZfVnyQwqrcZiHkPHnDz-I", authDomain: "fast-chat-b487e.firebaseapp.com", databaseURL: "https://fast-chat-b487e-default-rtdb.firebaseio.com", projectId: "fast-chat-b487e", storageBucket: "fast-chat-b487e.appspot.com", messagingSenderId: "782961045615", appId: "1:782961045615:web:41d0b3834f0fe743fa9d9a" };
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, setPersistence, browserLocalPersistence, browserSessionPersistence, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-    import { getDatabase, ref, set, get, child, push, onValue } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+    import { getDatabase, ref, set, get, push, onValue } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
@@ -91,18 +79,6 @@
     const forgotPassword = document.getElementById("forgotPassword");
     const authErr = document.getElementById("auth-error");
     const popup = document.getElementById("popup");
-
-    const homeSection = document.getElementById("home");
-    const userNameSpan = document.getElementById("userName");
-    const friendEmailInput = document.getElementById("friendEmail");
-    const addFriendBtn = document.getElementById("addFriendBtn");
-    const friendsList = document.getElementById("friendsList");
-    const chatBox = document.getElementById("chatBox");
-    const messageInput = document.getElementById("messageInput");
-    const sendMsgBtn = document.getElementById("sendMsgBtn");
-    const logoutBtnHome = document.getElementById("logoutBtnHome");
-
-    function showPopup(msg){ popup.textContent = msg; popup.style.display="block"; setTimeout(()=>popup.style.display="none",1500); }
 
     gotoLogin.onclick = () => { signupForm.hidden=true; loginForm.hidden=false; authErr.textContent=''; };
     gotoSignup.onclick = () => { loginForm.hidden=true; signupForm.hidden=false; authErr.textContent=''; };
@@ -118,6 +94,7 @@
         await updateProfile(cred.user, { displayName: name });
         await set(ref(db, `users/${cred.user.uid}`), { name, email, createdAt: Date.now() });
         showPopup("Account created successfully!");
+        window.location.href = 'home.html';
       } catch(e){ authErr.textContent = e.message; }
     };
 
@@ -131,6 +108,7 @@
         await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence);
         await signInWithEmailAndPassword(auth, email, pass);
         showPopup("Login successful!");
+        window.location.href = 'home.html';
       } catch(e){ authErr.textContent = e.message; }
     };
 
@@ -145,74 +123,7 @@
       } catch(e){ authErr.style.color="var(--danger)"; authErr.textContent=e.message; }
     };
 
-    logoutBtnHome.onclick = async () => { await signOut(auth); homeSection.hidden=true; document.getElementById("auth").hidden=false; signupForm.hidden=false; loginForm.hidden=true; authErr.textContent=''; };
-
-    addFriendBtn.onclick = async () => {
-      const friendEmail = friendEmailInput.value.trim();
-      if(!friendEmail) return;
-      const usersRef = ref(db, 'users');
-      const snapshot = await get(usersRef);
-      let friendUid = null;
-      snapshot.forEach(childSnap => { if(childSnap.val().email === friendEmail) friendUid = childSnap.key; });
-      if(!friendUid){ showPopup('User not found'); return; }
-      const currentUser = auth.currentUser;
-      await set(ref(db, `friends/${currentUser.uid}/${friendUid}`), { email: friendEmail });
-      showPopup('Friend added');
-      loadFriends();
-    };
-
-    function loadFriends(){
-      const currentUser = auth.currentUser;
-      friendsList.innerHTML='';
-      const friendsRef = ref(db, `friends/${currentUser.uid}`);
-      onValue(friendsRef, snapshot => {
-        friendsList.innerHTML='';
-        snapshot.forEach(childSnap => {
-          const div = document.createElement('div');
-          div.classList.add('friend-item');
-          div.textContent = childSnap.val().email;
-          div.onclick = () => loadChat(childSnap.key);
-          friendsList.appendChild(div);
-        });
-      });
-    }
-
-    function loadChat(friendUid){
-      chatBox.innerHTML='';
-      const chatRef = ref(db, `chats/${auth.currentUser.uid}_${friendUid}`);
-      onValue(chatRef, snapshot => {
-        chatBox.innerHTML='';
-        snapshot.forEach(childSnap => {
-          const msgDiv = document.createElement('div');
-          msgDiv.classList.add('message');
-          if(childSnap.val().sender === auth.currentUser.uid) msgDiv.classList.add('self');
-          msgDiv.textContent = childSnap.val().text;
-          chatBox.appendChild(msgDiv);
-        });
-      });
-
-      sendMsgBtn.onclick = async () => {
-        const text = messageInput.value.trim();
-        if(!text) return;
-        await push(ref(db, `chats/${auth.currentUser.uid}_${friendUid}`), { sender: auth.currentUser.uid, text, timestamp: Date.now() });
-        await push(ref(db, `chats/${friendUid}_${auth.currentUser.uid}`), { sender: auth.currentUser.uid, text, timestamp: Date.now() });
-        messageInput.value='';
-      };
-    }
-
-    onAuthStateChanged(auth, user => {
-      if(user){
-        document.getElementById("auth").hidden=true;
-        homeSection.hidden=false;
-        userNameSpan.textContent = user.displayName;
-        loadFriends();
-      } else {
-        document.getElementById("auth").hidden=false;
-        homeSection.hidden=true;
-        signupForm.hidden=false;
-        loginForm.hidden=true;
-      }
-    });
+    function showPopup(msg){ popup.textContent = msg; popup.style.display="block"; setTimeout(()=>popup.style.display="none",1500); }
   </script>
 </body>
 </html>
