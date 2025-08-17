@@ -69,9 +69,11 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, setPersistence, browserLocalPersistence, browserSessionPersistence, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
     import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
+
     const signupForm = document.getElementById("signupForm");
     const loginForm = document.getElementById("loginForm");
     const gotoLogin = document.getElementById("gotoLogin");
@@ -80,48 +82,56 @@
     const authErr = document.getElementById("auth-error");
     const popup = document.getElementById("popup");
     const logoutBtn = document.getElementById("logoutBtn");
+
     function showPopup(msg){ popup.textContent = msg; popup.style.display="block"; setTimeout(()=>popup.style.display="none",1500); }
+
     gotoLogin.onclick = () => { signupForm.hidden=true; loginForm.hidden=false; authErr.textContent=''; };
     gotoSignup.onclick = () => { loginForm.hidden=true; signupForm.hidden=false; authErr.textContent=''; };
+
     document.getElementById("signupBtn").onclick = async () => {
       authErr.textContent='';
-      const name=document.getElementById("name").value.trim();
-      const email=document.getElementById("email").value.trim();
-      const pass=document.getElementById("password").value;
-      if(!name||!email||!pass){ authErr.textContent="Fill all fields."; return; }
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const pass = document.getElementById("password").value;
+      if(!name || !email || !pass){ authErr.textContent="Fill all fields."; return; }
       try{
-        const cred=await createUserWithEmailAndPassword(auth,email,pass);
-        await updateProfile(cred.user,{displayName:name});
-        await set(ref(db,`users/${cred.user.uid}`),{name,email,createdAt:Date.now()});
+        const cred = await createUserWithEmailAndPassword(auth, email, pass);
+        await updateProfile(cred.user, { displayName: name });
+        await set(ref(db, `users/${cred.user.uid}`), { name, email, createdAt: Date.now() });
         showPopup("Account created successfully!");
-        setTimeout(()=>{ signupForm.hidden=true; loginForm.hidden=true; document.getElementById("auth").hidden=true; document.getElementById("app").hidden=false; },1500);
-      }catch(e){ authErr.textContent=e.message; }
+      } catch(e){ authErr.textContent = e.message; }
     };
+
     document.getElementById("loginBtn").onclick = async () => {
       authErr.textContent='';
-      const email=document.getElementById("loginEmail").value.trim();
-      const pass=document.getElementById("loginPassword").value;
-      const remember=document.getElementById("rememberMe").checked;
-      if(!email||!pass){ authErr.textContent="Enter email and password."; return; }
+      const email = document.getElementById("loginEmail").value.trim();
+      const pass = document.getElementById("loginPassword").value;
+      const remember = document.getElementById("rememberMe").checked;
+      if(!email || !pass){ authErr.textContent="Enter email and password."; return; }
       try{
-        await setPersistence(auth,remember?browserLocalPersistence:browserSessionPersistence);
-        await signInWithEmailAndPassword(auth,email,pass);
+        await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence);
+        await signInWithEmailAndPassword(auth, email, pass);
         showPopup("Login successful!");
-        setTimeout(()=>{ signupForm.hidden=true; loginForm.hidden=true; document.getElementById("auth").hidden=true; document.getElementById("app").hidden=false; },1500);
-      }catch(e){ authErr.textContent=e.message; }
+      } catch(e){ authErr.textContent = e.message; }
     };
-    forgotPassword.onclick=async()=>{
+
+    forgotPassword.onclick = async () => {
       authErr.textContent='';
-      const email=document.getElementById("loginEmail").value.trim();
+      const email = document.getElementById("loginEmail").value.trim();
       if(!email){ authErr.textContent="Enter your email to reset password."; return; }
       try{
-        await sendPasswordResetEmail(auth,email);
+        await sendPasswordResetEmail(auth, email);
         authErr.style.color="#22c55e";
         authErr.textContent="Password reset link sent to your email.";
-      }catch(e){ authErr.style.color="var(--danger)"; authErr.textContent=e.message; }
+      } catch(e){ authErr.style.color="var(--danger)"; authErr.textContent=e.message; }
     };
-    logoutBtn.onclick=async()=>{ await signOut(auth); document.getElementById("auth").hidden=false; document.getElementById("app").hidden=true; signupForm.hidden=true; loginForm.hidden=false; authErr.textContent=''; };
-    onAuthStateChanged(auth,user=>{ if(user){ document.getElementById("auth").hidden=true; document.getElementById("app").hidden=false; signupForm.hidden=true; loginForm.hidden=true; } else { document.getElementById("auth").hidden=false; document.getElementById("app").hidden=true; signupForm.hidden=true; loginForm.hidden=false; } });
+
+    logoutBtn.onclick = async () => { await signOut(auth); document.getElementById("auth").hidden=false; document.getElementById("app").hidden=true; signupForm.hidden=true; loginForm.hidden=false; authErr.textContent=''; };
+
+    onAuthStateChanged(auth, user => {
+      if(user){ document.getElementById("auth").hidden=true; document.getElementById("app").hidden=false; signupForm.hidden=true; loginForm.hidden=true; }
+      else { document.getElementById("auth").hidden=false; document.getElementById("app").hidden=true; signupForm.hidden=true; loginForm.hidden=false; }
+    });
   </script>
 </body>
 </html>
